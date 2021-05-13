@@ -18,7 +18,7 @@ int opcja = 1, run=0;
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam, HINSTANCE hInstance, int nCmdShow);
 
-//procedury buduj¹ce plik wyjœciowy
+//procedury budujące plik wyjściowy
 void startf(FILE* file)
 {    
     fprintf(file, "<REAPER_PROJECT 0.1 \"6.19 / win64\" 1613071903"
@@ -184,7 +184,7 @@ void clipf(FILE* file, double pos, double length, char name[], double soffs, cha
         "\n    >", pos, length, name, soffs, source);
 }
 
-//funkcje operuj¹ce na stringach
+//funkcje operujące na stringach
 const char* cut(char str[], int n)
 {
     char* part = strtok(str, "<");
@@ -210,7 +210,7 @@ long long stoi(char tab[])
     LPCTSTR sokno[50];
     long long length, p=1;
     long long l=0, i, temp;
-    sprintf(sokno, "wykryto b³¹d w pliku .xml, utworzny projekt mo¿e nie funkcjonowaæ poprawnie\n\noczekiwano liczby, otrzymano \"%s\"", tab);
+    sprintf(sokno, "wykryto błąd w pliku .xml, utworzny projekt może nie funkcjonować poprawnie\n\noczekiwano liczby, otrzymano \"%s\"", tab);
     length = strlen(tab);
     i = length - 1;
     while (i >= 0)
@@ -219,7 +219,7 @@ long long stoi(char tab[])
         if (temp > 9 || temp < 0)
         {
 
-            MessageBoxA(NULL, sokno, "b³¹d odczytu", MB_ICONERROR);
+            MessageBoxA(NULL, sokno, "błąd odczytu", MB_ICONERROR);
             return 0;
         }
         l = l + temp * p;
@@ -237,7 +237,7 @@ double stod(char tab[])
     double l = 0, p = 1;
     char* part;
     int i, temp;
-    sprintf(sokno, "wykryto b³¹d w pliku .xml, utworzny projekt mo¿e nie funkcjonowaæ poprawnie\n\noczekiwano liczby, otrzymano \"%s\"",tab);
+    sprintf(sokno, "wykryto błąd w pliku .xml, utworzny projekt może nie funkcjonować poprawnie\n\noczekiwano liczby, otrzymano \"%s\"",tab);
     //scanf("%s", tab);
     //printf("%d\n", strpbrk(tab, "."));
     if (strpbrk(tab, ".") != 0)
@@ -259,7 +259,7 @@ double stod(char tab[])
             temp = (tab[i] - 48);
             if (temp > 9 || temp < 0)
             {
-                MessageBoxA(NULL, sokno, "b³¹d odczytu", MB_ICONERROR);
+                MessageBoxA(NULL, sokno, "błąd odczytu", MB_ICONERROR);
                 //run = 0;
                 return 0;
             }
@@ -277,7 +277,7 @@ double stod(char tab[])
             temp = (tab2[i] - 48);
             if (temp > 9 || temp < 0)
             {
-                MessageBoxA(NULL, sokno, "b³¹d odczytu", MB_ICONERROR);
+                MessageBoxA(NULL, sokno, "błąd odczytu", MB_ICONERROR);
                 //run = 0;
                 return 0;
             }
@@ -307,10 +307,10 @@ void clear()
 int errorF(char wiersz[], char a, int kol)
 {
     LPCTSTR sokno[50];
-    sprintf(sokno, "niedopowieni format pliku .xml, poprawna konwersja niemo¿liwa\n\nci¹g znaków \n\"%s\" \nzawiera b³¹d", wiersz);
+    sprintf(sokno, "niedopowieni format pliku .xml, poprawna konwersja niemożliwa\n\nciąg znaków \n\"%s\" \nzawiera błąd", wiersz);
     if (wiersz[kol] != a)
     {
-        MessageBoxA(NULL, sokno, "b³¹d odczytu", MB_ICONERROR);
+        MessageBoxA(NULL, sokno, "błąd odczytu", MB_ICONERROR);
         return 0;
     }
     return 1;
@@ -337,7 +337,7 @@ int translator(FILE* xml, FILE* rpp)
         if (!errorF(line, 'n', 9))
         {
             //sprintf(sokno, "%c", line[9]);
-            //MessageBoxA(NULL, "z³y format pliku .xml, konwersja niemo¿liwa", "b³¹d odczytu", MB_ICONEXCLAMATION);
+            //MessageBoxA(NULL, "zły format pliku .xml, konwersja niemożliwa", "błąd odczytu", MB_ICONEXCLAMATION);
             p = 0;
         }
         else
@@ -354,8 +354,8 @@ int translator(FILE* xml, FILE* rpp)
             frames = stoi(line);
             if (frames <= 0)
             {
-                sprintf(sokno, "niedopowieni format pliku .xml, poprawna konwersja niemo¿liwa\n\nci¹g znaków \n\"%s\" \nzawiera b³¹d", line);
-                MessageBoxA(NULL, sokno, "b³¹d odczytu", MB_ICONERROR);
+                sprintf(sokno, "niedopowieni format pliku .xml, poprawna konwersja niemożliwa\n\nciąg znaków \n\"%s\" \nzawiera błąd", line);
+                MessageBoxA(NULL, sokno, "błąd odczytu", MB_ICONERROR);
                 p = 0;
             }
             else
@@ -367,8 +367,8 @@ int translator(FILE* xml, FILE* rpp)
                 framerate = stod(line); //FLOAT???
                 if (framerate <= 1)
                 {
-                    sprintf(sokno, "niedopowieni format pliku .xml, poprawna konwersja niemo¿liwa\n\nci¹g znaków \n\"%s\" \nzawiera b³¹d", line);
-                    MessageBoxA(NULL, "niedopowieni format pliku .xml, poprawna konwersja niemo¿liwa", "b³¹d odczytu", MB_ICONERROR);
+                    sprintf(sokno, "niedopowieni format pliku .xml, poprawna konwersja niemożliwa\n\nciąg znaków \n\"%s\" \nzawiera błąd", line);
+                    MessageBoxA(NULL, "niedopowieni format pliku .xml, poprawna konwersja niemożliwa", "błąd odczytu", MB_ICONERROR);
                     p = 0;
                 }
                 else
@@ -490,8 +490,8 @@ int translator(FILE* xml, FILE* rpp)
                             bad += 1;
                             if (mode == 2)
                             {
-                                sprintf(sokno, "b³¹d nr %d \nnie znaleziono lokazlizacji wystapienia elementu projektu:\n%s", bad, name);
-                                MessageBoxA(NULL, sokno, "b³¹d konwersji", MB_ICONEXCLAMATION);
+                                sprintf(sokno, "błąd nr %d \nnie znaleziono lokazlizacji wystapienia elementu projektu:\n%s", bad, name);
+                                MessageBoxA(NULL, sokno, "błąd konwersji", MB_ICONEXCLAMATION);
                             }
                         }
                         sprintf(sokno, "   %s %.4lfs %.4lfs %d %d %.4lfs", loc, position, offset, start, end, duration);
@@ -525,12 +525,12 @@ int translator(FILE* xml, FILE* rpp)
     fclose(rpp);
     if (p == 1)
     {
-        MessageBoxA(NULL, "konwersja zakoñczona", "translator", MB_ICONINFORMATION);
+        MessageBoxA(NULL, "konwersja zakończona", "translator", MB_ICONINFORMATION);
 
         if (bad > 0)
         {
-            sprintf(sokno, "nie znaleziono lokazlizacji %d wystapieñ elementów projektu", bad);
-            MessageBoxA(NULL, sokno, "b³êdy konwersji", MB_ICONEXCLAMATION);
+            sprintf(sokno, "nie znaleziono lokazlizacji %d wystapień elementów projektu", bad);
+            MessageBoxA(NULL, sokno, "błędy konwersji", MB_ICONEXCLAMATION);
         }
     }
 
@@ -555,7 +555,7 @@ void opensave() // INT  PCHAR FileName, HWND hwnd, HINSTANCE hInstance
     ofn.lpstrFile = szFile;
     // Set lpstrFile[0] to '\0' so that GetOpenFileName does not 
     // use the contents of szFile to initialize itself.
-    ofn.lpstrFile[0] = '\0'; // d³ugi string - NIE DZIA£A
+    ofn.lpstrFile[0] = '\0'; // długi string - NIE DZIAŁA
     ofn.nMaxFile = sizeof(szFile);
     ofn.lpstrFilter = "Premiere (.xml)\0*.xml\0";
     ofn.nFilterIndex = 1;
@@ -563,7 +563,7 @@ void opensave() // INT  PCHAR FileName, HWND hwnd, HINSTANCE hInstance
     ofn.nMaxFileTitle = 0;
     ofn.lpstrInitialDir = NULL;
     ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
-    // MessageBox(NULL, L"nie uda³o siê otworzyæ okna2", L"error", MB_ICONEXCLAMATION);
+    // MessageBox(NULL, L"nie udało się otworzyć okna2", L"error", MB_ICONEXCLAMATION);
     // Display the Open dialog box. 
 
     if (GetOpenFileNameA(&ofn) == TRUE)
@@ -595,7 +595,7 @@ void opensave() // INT  PCHAR FileName, HWND hwnd, HINSTANCE hInstance
             ofn.lpstrFile = szFile;
             // Set lpstrFile[0] to '\0' so that GetOpenFileName does not 
             // use the contents of szFile to initialize itself.
-            ofn.lpstrFile[0] = '\0'; // d³ugi string - NIE DZIA£A
+            ofn.lpstrFile[0] = '\0'; // długi string - NIE DZIAŁA
             ofn.nMaxFile = sizeof(szFile);
             ofn.lpstrFilter = "Reaper (.rpp)\0*.rpp\0";
             ofn.nFilterIndex = 1;
@@ -617,20 +617,20 @@ void opensave() // INT  PCHAR FileName, HWND hwnd, HINSTANCE hInstance
             }      
             else
             {
-                MessageBox(NULL, L"nie uda³o siê utworzyæ pliku do zapisu", L"error", MB_ICONERROR);
+                MessageBox(NULL, L"nie udało się utworzyć pliku do zapisu", L"error", MB_ICONERROR);
                 clear();
             }
         }
         else
         {
-            MessageBox(NULL, L"nie uda³o siê otworzyæ pliku", L"error", MB_ICONERROR);
+            MessageBox(NULL, L"nie udało się otworzyć pliku", L"error", MB_ICONERROR);
             clear();
         }
         //return 1;
     } 
     else
     {
-        MessageBox(NULL, L"nie uda³o siê otworzyæ pliku", L"error", MB_ICONERROR);
+        MessageBox(NULL, L"nie udało się otworzyć pliku", L"error", MB_ICONERROR);
         clear();
         //return 0;
     }
@@ -644,7 +644,7 @@ void opensaveDROP(wchar_t* name)
 
     if ((error = fopen_s(&fileXML, "test.xml", "r")) != 0)
     {
-        MessageBox(NULL, L"nie uda³o siê utworzyæ pliku do zapisu", L"error", MB_ICONERROR);
+        MessageBox(NULL, L"nie udało się utworzyć pliku do zapisu", L"error", MB_ICONERROR);
         clear();
     }
     else
@@ -663,7 +663,7 @@ void opensaveDROP(wchar_t* name)
         ofn.lpstrFile = szFile;
         // Set lpstrFile[0] to '\0' so that GetOpenFileName does not 
         // use the contents of szFile to initialize itself.
-        ofn.lpstrFile[0] = '\0'; // d³ugi string - NIE DZIA£A
+        ofn.lpstrFile[0] = '\0'; // długi string - NIE DZIAŁA
         ofn.nMaxFile = sizeof(szFile);
         ofn.lpstrFilter = "Reaper (.rpp)\0*.rpp\0";
         ofn.nFilterIndex = 1;
@@ -685,14 +685,14 @@ void opensaveDROP(wchar_t* name)
         }
         else
         {
-            MessageBox(NULL, L"nie uda³o siê utworzyæ pliku do zapisu", L"error", MB_ICONERROR);
+            MessageBox(NULL, L"nie udało się utworzyć pliku do zapisu", L"error", MB_ICONERROR);
             clear();
         }
     }
 
 }
 
-//okno g³ówne
+//okno główne
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
     WNDCLASSEX main;
@@ -715,7 +715,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
     if (!RegisterClassEx(&main)) //DO NAPRAWY
     {
-        MessageBox(NULL, L"nie uda³o siê otworzyæ okna", L"error", MB_ICONERROR | MB_OK);
+        MessageBox(NULL, L"nie udało się otworzyć okna", L"error", MB_ICONERROR | MB_OK);
         return 1;
     }
     HWND hwnd;
@@ -725,7 +725,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
     //bcgteskst = CreateWindow(L"STATIC", L"", WS_VISIBLE | WS_CHILD | SS_LEFT, 21, 41, 558, 191, hwnd, NULL, hInstance, NULL);
     tlo2 = CreateWindow(L"STATIC", L"", WS_VISIBLE | WS_CHILD | SS_LEFT, 90, 55, 420, 160, hwnd, NULL, hInstance, NULL);
-    tlo = CreateWindow(L"STATIC", L"\nkliknij lub przesuñ plik na okno programu, by uruchomiæ", WS_VISIBLE | WS_CHILD | SS_CENTER, 100, 65, 400, 140, hwnd, NULL, hInstance, NULL);
+    tlo = CreateWindow(L"STATIC", L"\nkliknij, by uruchomić\n\n\n\nlub przesuń plik na okno programu", WS_VISIBLE | WS_CHILD | SS_CENTER, 100, 65, 400, 140, hwnd, NULL, hInstance, NULL);
     SendMessage(tlo, WM_SETFONT, (WPARAM)hFont, MAKELPARAM(TRUE, 0));
     std = CreateWindowEx(0, L"BUTTON", L"START", WS_CHILD | WS_VISIBLE | BS_FLAT, 250, 125, 100, 40, hwnd, NULL, hInstance, NULL); //BS_BITMAP
     SendMessage(std, WM_SETFONT, (WPARAM)hFont2, MAKELPARAM(TRUE, 0));
@@ -733,7 +733,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     //bm1 = CreateWindowEx(0, L"BUTTON", L"standardowy", WS_CHILD | WS_VISIBLE | BS_FLAT, 250, 115, 100, 40, hwnd, NULL, hInstance, NULL);
 
     //SendMessage(button, BM_SETIMAGE, IMAGE_BITMAP, (LPARAM)LoadBitmapA(hInstance, MAKEINTRESOURCEA(IMG_BITMAP)));
-    options = CreateWindowEx(0, L"BUTTON", L"wiêcej opcji", WS_CHILD | WS_VISIBLE | BS_FLAT, 180, 0, 240, 23, hwnd, NULL, hInstance, NULL);    
+    options = CreateWindowEx(0, L"BUTTON", L"więcej opcji", WS_CHILD | WS_VISIBLE | BS_FLAT, 180, 0, 240, 23, hwnd, NULL, hInstance, NULL);    
     SendMessage(options, WM_SETFONT, (WPARAM)hFont, MAKELPARAM(TRUE, 0));
 
     help = CreateWindowEx(0, L"BUTTON", L"pomoc", WS_CHILD | WS_VISIBLE | BS_FLAT, 0, 0, 180, 23, hwnd, NULL, hInstance, NULL);
@@ -761,12 +761,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
     if (hwnd == NULL)
     {
-        MessageBox(NULL, L"nie uda³o siê otworzyæ okna", L"error", MB_ICONERROR);
+        MessageBox(NULL, L"nie udało się otworzyć okna", L"error", MB_ICONERROR);
         return 1;
     }
     if (tekst == NULL)
     {
-        MessageBox(NULL, L"nie uda³o siê utworzyæ przycisku", L"error", MB_ICONERROR);
+        MessageBox(NULL, L"nie udało się utworzyć przycisku", L"error", MB_ICONERROR);
         return 1;
     }
     HANDLE hIcon = (HICON)LoadImage(NULL, L"2.ico", IMAGE_ICON, 0, 0, LR_LOADFROMFILE | LR_DEFAULTSIZE | LR_SHARED);
@@ -795,7 +795,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     return message.wParam;
 }
 
-//obs³uga zdarzeñ
+//obsługa zdarzeń
 int i = 1, j = 1, k = 1;
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam, HINSTANCE hInstance, int nCmdShow)
 {
@@ -807,7 +807,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam, HINS
     HBRUSH hBrush4 = CreateSolidBrush(RGB(180, 200, 200));
     HFONT hFont2 = CreateFont(20, 0, 0, 0, FW_DONTCARE, FALSE, FALSE, FALSE, DEFAULT_CHARSET, OUT_OUTLINE_PRECIS, CLIP_DEFAULT_PRECIS, PROOF_QUALITY, VARIABLE_PITCH, TEXT("Century Gothic"));
     HFONT hFont = CreateFont(18, 0, 0, 0, FW_DONTCARE, FALSE, FALSE, FALSE, DEFAULT_CHARSET, OUT_OUTLINE_PRECIS, CLIP_DEFAULT_PRECIS, PROOF_QUALITY, VARIABLE_PITCH, TEXT("Century Gothic"));
-    //OGARN¥Æ ZAMYKANIE CZCIONEK!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    //OGARNĄĆ ZAMYKANIE CZCIONEK!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 
     if (!run)
@@ -867,7 +867,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam, HINS
             else
             {
                 clear();
-                MessageBox(NULL, L"z³e rozszerzenie pliku", L"error", MB_ICONERROR);
+                MessageBox(NULL, L"złe rozszerzenie pliku", L"error", MB_ICONERROR);
                 
                 //SetWindowTextA(tekst, "");
             }
@@ -920,10 +920,10 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam, HINS
             {
                 /*MessageBoxA(NULL, "Program konwertuje pliki .xml w standardzie Adobe Premiere Pro na pliki .rpp programu Reaper 6\n"
                     "\n1. Opcja \"standard\" - wybór pliku oraz normalny przebieg translacji\n"
-                    "\n2. Opcja \"debug\" - wybór pliku oraz powiadomienia o ka¿dym b³êdzie konwersji\n"
-                    "\n3. Opcja \"no path\" - zapis pustej œcie¿ki dostêpu w celu odci¹¿enia wynikowego projektu. Opcja zalecana, gdy do projektu programu Reaper "
-                    "importujemy gotowy film - umo¿liwia podgl¹d na \"timeline\" i nie wymaga ³adowania mnóstwa niepotrzebnych danych\n"
-                    "\nZnane b³êdy: brak konwersji lokalizacji ponownych wyst¹pieñ plików projektu, jeœli nie wystêpuj¹ one po sobie\n"
+                    "\n2. Opcja \"debug\" - wybór pliku oraz powiadomienia o każdym błędzie konwersji\n"
+                    "\n3. Opcja \"no path\" - zapis pustej ścieżki dostępu w celu odciążenia wynikowego projektu. Opcja zalecana, gdy do projektu programu Reaper "
+                    "importujemy gotowy film - umożliwia podgląd na \"timeline\" i nie wymaga ładowania mnóstwa niepotrzebnych danych\n"
+                    "\nZnane błędy: brak konwersji lokalizacji ponownych wystąpień plików projektu, jeśli nie występują one po sobie\n"
                     , "pomoc", MB_ICONINFORMATION);*/
                 if (k == -1)
                 {
@@ -933,18 +933,18 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam, HINS
                 }
                 if (i == -1)
                 {
-                    //SetWindowTextA(options, "wiêcej opcji");
+                    //SetWindowTextA(options, "więcej opcji");
                 }
                 if (j == 1)
                 {
                     
                     helpT = CreateWindow(L"STATIC", L"Program konwertuje pliki .xml w standardzie Adobe Premiere Pro / Final Cut Pro na pliki .rpp programu Reaper."
                         "\n1. Opcja \"standard\" - wybór pliku oraz normalny przebieg translacji."
-                        "\n2. Opcja \"debug\" - wybór pliku oraz powiadomienia o ka¿dym b³êdzie konwersji."
-                        "\n3. Opcja \"no path\" - zapis pustej œcie¿ki dostêpu w celu odci¹¿enia wynikowego projektu. Opcja zalecana, gdy do projektu programu Reaper "
-                        "importujemy gotowy film - umo¿liwia podgl¹d na \"timeline\" i nie wymaga ³adowania mnóstwa niepotrzebnych danych."
-                        "\nZnane b³êdy: brak konwersji lokalizacji ponownych wyst¹pieñ plików projektu, jeœli nie wystêpuj¹ one po sobie."
-                        "\n                                     >> kliknij, by przejœæ do strony projektu <<", WS_VISIBLE | WS_CHILD | SS_LEFT | SS_NOTIFY, 20, 40, 560, 193, hwnd, NULL, hInstance, NULL);
+                        "\n2. Opcja \"debug\" - wybór pliku oraz powiadomienia o każdym błędzie konwersji."
+                        "\n3. Opcja \"no path\" - zapis pustej ścieżki dostępu w celu odciążenia wynikowego projektu. Opcja zalecana, gdy do projektu programu Reaper "
+                        "importujemy gotowy film - umożliwia podgląd na \"timeline\" i nie wymaga ładowania mnóstwa niepotrzebnych danych."
+                        "\nZnane błędy: brak konwersji lokalizacji ponownych wystąpień plików projektu, jeśli nie występują one po sobie."
+                        "\n                                     >> kliknij, by przejść do strony projektu <<", WS_VISIBLE | WS_CHILD | SS_LEFT | SS_NOTIFY, 20, 40, 560, 193, hwnd, NULL, hInstance, NULL);
                     SendMessage(helpT, WM_SETFONT, (WPARAM)hFont, MAKELPARAM(FALSE, 0));
                     //BringWindowToTop(helpT);
                     SetWindowTextA(help, "zamknij");
@@ -962,7 +962,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam, HINS
                 /*MessageBoxA(NULL, "Translator            wersja 0.92"
                     "\ndata:                    22.04.2021"
                     "\nautor:    Mateusz Gawrysiak"
-                    "\n\nu¿ywaj na w³asne ryzyko", "o programie", MB_ICONINFORMATION);*/
+                    "\n\nużywaj na własne ryzyko", "o programie", MB_ICONINFORMATION);*/
                 if (j == -1)
                 {
                     DestroyWindow(helpT);
@@ -971,7 +971,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam, HINS
                 }
                 if (i == -1)
                 {
-                    //SetWindowTextA(options, "wiêcej opcji");
+                    //SetWindowTextA(options, "więcej opcji");
                 }
                 if (k == 1)
                 {
@@ -981,8 +981,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam, HINS
                     "\nkonwersja plików projektów .xml na .rpp"
                     "\nopracowany dla wersji Reaper 6.19 i kolejnych\n"
                     "\nMateusz Gawrysiak"
-                    "\n\nkorzystanie z programu oznacza œwiadomoœæ ryzyk"
-                    "\n>> kliknij, by otworzyæ stronê autora <<", WS_VISIBLE | WS_CHILD | SS_CENTER | SS_NOTIFY, 100, 65, 400, 140, hwnd, NULL, hInstance, NULL);
+                    "\n\nkorzystanie z programu oznacza świadomość ryzyk"
+                    "\n>> kliknij, by otworzyć stronę autora <<", WS_VISIBLE | WS_CHILD | SS_CENTER | SS_NOTIFY, 100, 65, 400, 140, hwnd, NULL, hInstance, NULL);
                     SendMessage(aboutT, WM_SETFONT, (WPARAM)hFont, MAKELPARAM(FALSE, 0));
                 }
                 else
@@ -1021,7 +1021,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam, HINS
                 {      
                     //UpdateWindow(tlo);
                     //UpdateWindow(tlo2);
-                    SetWindowTextA(tlo, "\nkliknij, by uruchomiæ w wybranym trybie");
+                    SetWindowTextA(tlo, "\nkliknij, by uruchomić w wybranym trybie");
                     SetWindowTextA(options, "mniej opcji");
                     //SetTextAlign(tlo, TA_CENTER);
                     SetWindowTextA(std, "standard");
@@ -1037,8 +1037,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam, HINS
                 else if (flaga == 0)
                 {
                     //SetWindowTextA(tlo2, "");                    
-                    SetWindowTextA(tlo, "\nkliknij lub przesuñ plik na okno programu, by uruchomiæ");
-                    SetWindowTextA(options, "wiêcej opcji");
+                    SetWindowTextA(tlo, "\nkliknij, by uruchomić\n\n\n\nlub przesuń plik na okno programu");
+                    SetWindowTextA(options, "więcej opcji");
                     SetWindowTextA(std, "START");
                     DestroyWindow(dbg);
                     DestroyWindow(pth);
@@ -1049,7 +1049,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam, HINS
                     i *= -1;
                 }
                 
-                //MessageBoxA(NULL, "Praca nad kolejnymi funkcjonalnoœciami w trakcie", "opcje", MB_ICONINFORMATION);
+                //MessageBoxA(NULL, "Praca nad kolejnymi funkcjonalnościami w trakcie", "opcje", MB_ICONINFORMATION);
                 i *= -1;
                 break;
             }
