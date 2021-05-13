@@ -1,3 +1,5 @@
+/* please contact me, if you'd like to use this code - I'll be happy to help and I'm open to suggestions */
+
 #pragma warning(disable:4996)
 #include <stdio.h>
 #include <stdlib.h>
@@ -564,7 +566,7 @@ void opensave() // INT  PCHAR FileName, HWND hwnd, HINSTANCE hInstance
     // MessageBox(NULL, L"nie uda³o siê otworzyæ okna2", L"error", MB_ICONEXCLAMATION);
     // Display the Open dialog box. 
 
-    if (GetOpenFileName(&ofn) == TRUE)
+    if (GetOpenFileNameA(&ofn) == TRUE)
     {
         strcpy(s, ofn.lpstrFile); //ODCZYTUJE TYLKO PIERWSZA LITERE
         
@@ -669,7 +671,7 @@ void opensaveDROP(wchar_t* name)
         ofn.nMaxFileTitle = 0;
         ofn.lpstrInitialDir = NULL;
         ofn.Flags = OFN_OVERWRITEPROMPT;
-        GetSaveFileName(&ofn);
+        GetSaveFileNameA(&ofn);
         sh = CreateFileA(ofn.lpstrFile, GENERIC_WRITE, 0, (LPSECURITY_ATTRIBUTES)NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, (HANDLE)NULL);
         int fd = _open_osfhandle((long)sh, _O_RDONLY);
         if (fd != -1)
