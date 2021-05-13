@@ -1,4 +1,7 @@
-/* please contact me, if you'd like to use this code - I'll be happy to help and I'm open to suggestions */
+/* 
+WORK IN PROGRESS
+please contact me, if you'd like to use this code - I'll be happy to help and I'm open to suggestions 
+*/
 
 #pragma warning(disable:4996)
 #include <stdio.h>
