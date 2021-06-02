@@ -1,8 +1,3 @@
-/* 
-WORK IN PROGRESS
-please contact me, if you'd like to use this code - I'll be happy to help and I'm open to suggestions 
-*/
-
 #pragma warning(disable:4996)
 #include <stdio.h>
 #include <stdlib.h>
@@ -17,7 +12,7 @@ LPSTR classname = "window";
 MSG message;
 HWND button, tekst, help, about, options, tekst2, bar1, bar2, bar3, bar4, bar5, bcgteskst;
 HWND ho, std, pth, dbg, tlo, tlo2, helpT, aboutT;
-int opcja = 1, run=0;
+int opcja = 1, run = 0;
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam, HINSTANCE hInstance, int nCmdShow);
 
@@ -241,54 +236,48 @@ double stod(char tab[])
     char* part;
     int i, temp;
     sprintf(sokno, "wykryto błąd w pliku .xml, utworzny projekt może nie funkcjonować poprawnie\n\noczekiwano liczby, otrzymano \"%s\"",tab);
-    //scanf("%s", tab);
-    //printf("%d\n", strpbrk(tab, "."));
+
     if (strpbrk(tab, ".") != 0)
     {
-        strcpy(tab2, tab);
-        
+        strcpy(tab2, tab);        
         part = strtok(tab2, ".");
         strcpy(tab, part);
         part = strtok(NULL, ".");
         strcpy(tab2, part);
-        //part = strtok(tab2, ".");
-        //strtok(tab2, ".");
-        //printf("\n%s\n%s\n\n", tab, tab2);
+
         length = strlen(tab);
         i = length - 1;
-        //for (int j = 0; j < len)
+
         while (i >= 0)
         {
             temp = (tab[i] - 48);
             if (temp > 9 || temp < 0)
             {
                 MessageBoxA(NULL, sokno, "błąd odczytu", MB_ICONERROR);
-                //run = 0;
                 return 0;
             }
             l = l + temp * p;
             p *= 10;
             i--;
         }
-        //printf("%lf", l);
+
         length = strlen(tab2);
         p = 0.1;
         i = 0;
-        //for (int j = 0; j < len)
+
         while (i < length)
         {
             temp = (tab2[i] - 48);
             if (temp > 9 || temp < 0)
             {
                 MessageBoxA(NULL, sokno, "błąd odczytu", MB_ICONERROR);
-                //run = 0;
                 return 0;
             }
             l = l + temp * p;
             p *= 0.1;
             i++;
         }
-        //printf("\n%lf", l);
+
         return l;
     }
     else
@@ -300,9 +289,6 @@ double stod(char tab[])
 //czyszczenie pól tekstowych
 void clear()
 {
-    /*DestroyWindow(tekst);
-    DestroyWindow(tekst2);
-    opcja = -1;*/
     SetWindowTextA(tekst, "");
     SetWindowTextA(tekst2, ".xml -> .rpp");
 }
@@ -319,17 +305,37 @@ int errorF(char wiersz[], char a, int kol)
     return 1;
 }
 
-//konwersja plików
-int translator(FILE* xml, FILE* rpp)
+//konwersja - tworzenie pliku wynikowego rpp
+int translator(FILE* xml)
 {
-    run = 1;
+    LPCTSTR s[50];
     LPCTSTR sokno[250];
     errno_t error;
+    FILE* rpp = NULL;
     const int size = 150;
     char line[250], name[250], loc[250], name_old[250];
     int mode = opcja;
     int time, frames, hours, minutes, seconds, sciezki=0, clips, clips_all=0, start, end, temp, p=0, k, bad=0;   
     double duration, position, offset, framerate;
+    OPENFILENAME ofn;
+    char szFile[250];   
+    HANDLE sh2 = NULL;
+
+    run = 1;
+
+    ZeroMemory(&ofn, sizeof(ofn));
+
+    ofn.lStructSize = sizeof(ofn);
+    ofn.hwndOwner = NULL;
+    ofn.lpstrFile = szFile;
+    ofn.lpstrFile[0] = '\0'; 
+    ofn.nMaxFile = sizeof(szFile);
+    ofn.lpstrFilter = "Reaper (.rpp)\0*.rpp\0";
+    ofn.nFilterIndex = 1;
+    ofn.lpstrFileTitle = NULL;
+    ofn.nMaxFileTitle = 0;
+    ofn.lpstrInitialDir = NULL;
+    ofn.Flags = OFN_OVERWRITEPROMPT;
 
     if(1)
     {
@@ -339,12 +345,11 @@ int translator(FILE* xml, FILE* rpp)
         }     
         if (!errorF(line, 'n', 9))
         {
-            //sprintf(sokno, "%c", line[9]);
-            //MessageBoxA(NULL, "zły format pliku .xml, konwersja niemożliwa", "błąd odczytu", MB_ICONEXCLAMATION);
             p = 0;
         }
         else
         {
+            
             p = 1;
             strcpy(line, cut2(line, 3));
 
@@ -362,12 +367,12 @@ int translator(FILE* xml, FILE* rpp)
                 p = 0;
             }
             else
-            {
+            {                
                 fgets(line, 60, xml);
                 fgets(line, 60, xml);
                 strcpy(line, cut(line, 3));
 
-                framerate = stod(line); //FLOAT???
+                framerate = stod(line);
                 if (framerate <= 1)
                 {
                     sprintf(sokno, "niedopowieni format pliku .xml, poprawna konwersja niemożliwa\n\nciąg znaków \n\"%s\" \nzawiera błąd", line);
@@ -375,24 +380,42 @@ int translator(FILE* xml, FILE* rpp)
                     p = 0;
                 }
                 else
-                {
+                {                    
                     time = frames / framerate;
                     hours = time / 3600;
                     minutes = (time - hours * 3600) / 60;
                     seconds = time - hours * 3600 - minutes * 60;
 
                     sprintf(sokno, "%s %d klatek - %d sekund [%dh %dmin %ds] - %.4lf fps\n", name, frames, time, hours, minutes, seconds, framerate);
-                    SetWindowTextA(tekst, sokno);
+                    SetWindowTextA(tekst, sokno);                    
 
-                    startf(rpp);
-
-                    fgets(line, 250, xml); //dodac ifa na zly plik
+                    fgets(line, 250, xml);
                 }
             }
-
         }
-                
-        while(p)
+        if (p==1) //otwieranie pliku do zapisu, jeśli możliwy jest prawidłowy odczyt
+        {
+            GetSaveFileNameA(&ofn);
+            sh2 = CreateFileA(ofn.lpstrFile, GENERIC_WRITE, 0, (LPSECURITY_ATTRIBUTES)NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, (HANDLE)NULL);
+            int fd = _open_osfhandle((long)sh2, _O_RDONLY);
+            if (fd != -1)
+            {
+                sprintf(s, "utworzono plik %s", ofn.lpstrFile);
+                SetWindowTextA(tekst, s);
+                rpp = _fdopen(fd, "w");
+
+                startf(rpp);
+
+                p = 1;
+            }
+            else
+            {
+                MessageBox(NULL, L"nie udało się utworzyć pliku do zapisu", L"error", MB_ICONERROR);
+                p = 0;
+                clear();
+            }
+        }
+        while(p==1) //konwersja plików
         {
             strcpy(line, cut(line, 2));
 
@@ -403,8 +426,10 @@ int translator(FILE* xml, FILE* rpp)
 
             if (strcmp(line, "track")==0) //odczyt sciezki
             {
+                
                 sciezki++;
-                track(rpp, sciezki);
+                track(rpp, sciezki); 
+                
                 clips = 0;
                 sprintf(sokno, "sciezka %d",sciezki);  
                 SetWindowTextA(tekst2, sokno);
@@ -419,15 +444,12 @@ int translator(FILE* xml, FILE* rpp)
                         break;
                     }                           
                  
-                    if (strcmp(line, "clipitem") == 0) //odczyt clipu
+                    if (strcmp(line, "clipitem") == 0) //odczyt klipu
                     {
                         clips++;
                         fgets(line, 250, xml);
                         errorF(line, 'n', 25);
-
                         strcpy(line, cut2(line, 3));
-
-                        //printf("  %d %s\n", clips, line);
                         strcpy(name, line);
 
                         for (int i = 0; i < 6; i++)
@@ -485,13 +507,13 @@ int translator(FILE* xml, FILE* rpp)
                                     loc[z] = line[z + k];
                                 }                                
                             }
-                            loc[z] = '\0'; //ultra wazne 
+                            loc[z] = '\0'; //kończenie łańcucha znaków
                         }
                         else if (strcmp(name, name_old) != 0) //jezeli nazwa jest inna niz poprzedniego klipu, to nie uzywaj jego sciezki
                         {
                             strcpy(loc, "C:/___no__file___");
                             bad += 1;
-                            if (mode == 2)
+                            if (mode == 2) //jeśli konwersja odbywa się w trybie debug, informuj o każdym błędzie
                             {
                                 sprintf(sokno, "błąd nr %d \nnie znaleziono lokazlizacji wystapienia elementu projektu:\n%s", bad, name);
                                 MessageBoxA(NULL, sokno, "błąd konwersji", MB_ICONEXCLAMATION);
@@ -499,7 +521,8 @@ int translator(FILE* xml, FILE* rpp)
                         }
                         sprintf(sokno, "   %s %.4lfs %.4lfs %d %d %.4lfs", loc, position, offset, start, end, duration);
                         SetWindowTextA(tekst2, sokno);
-                        if (mode == 2)
+
+                        if (mode == 2) //jeśli konwersja odbywa się w trybie debug, zwiększ czas na odczytanie informacji przez użytkownika
                         {
                             Sleep(2);
                         }
@@ -517,24 +540,46 @@ int translator(FILE* xml, FILE* rpp)
             fgets(line, 250, xml);
         }
         fclose(xml);
+        
         if (p == 1)
-        {
+        {            
             sprintf(sokno, "%d elementow w projekcie", clips_all);
             SetWindowTextA(tekst2, sokno);
             s_end(rpp, 0);
+            fclose(rpp);
         }
 
     }
-    fclose(rpp);
+    CloseHandle(sh2);
     if (p == 1)
     {
-        MessageBoxA(NULL, "konwersja zakończona", "translator", MB_ICONINFORMATION);
-
         if (bad > 0)
         {
             sprintf(sokno, "nie znaleziono lokazlizacji %d wystapień elementów projektu", bad);
-            MessageBoxA(NULL, sokno, "błędy konwersji", MB_ICONEXCLAMATION);
+            MessageBoxA(NULL, sokno, "zakończono przetwarzanie - wystąpiły błędy konwersji", MB_ICONINFORMATION);
         }
+        else
+        {
+            sprintf(sokno, "nie znaleziono żadnych problemów");
+            MessageBoxA(NULL, sokno, "zakończono przetwarzanie", MB_ICONINFORMATION);
+        }
+       
+        strcpy(name, ofn.lpstrFile);
+        for (int j = 0; j < strlen(name); j++)
+        {
+            if (name[j] == '\\')
+            {
+                k = j;
+            }
+        }     
+        strcpy(name, "explorer ");
+        strncat(name, ofn.lpstrFile, k+1);
+
+        system(name);
+    }
+    else
+    {
+        MessageBoxA(NULL, "spróbuj uzyć innego pliku", "translator", MB_ICONINFORMATION);
     }
 
     clear();
@@ -542,23 +587,19 @@ int translator(FILE* xml, FILE* rpp)
 	return 0;
 }
 
-//otwieranie i tworzenie pliku do zapisu
-void opensave() // INT  PCHAR FileName, HWND hwnd, HINSTANCE hInstance
+//otwieranie pliku i inicjacja procesu konwersji
+void opensave()
 {
-    OPENFILENAME ofn, sofn;       // common dialog box structure
-    char szFile[250];       // buffer for file name
-    HANDLE h, sh;              // file handle
-    LPWSTR s[50]; //,prefix[260];
-    //strcpy(prefix, "\\\\?\\");
+    OPENFILENAME ofn, sofn;
+    char szFile[250];
+    HANDLE h;
+    LPWSTR s[50];
 
-    // Initialize OPENFILENAME
     ZeroMemory(&ofn, sizeof(ofn));
     ofn.lStructSize = sizeof(ofn);
     ofn.hwndOwner = NULL;
     ofn.lpstrFile = szFile;
-    // Set lpstrFile[0] to '\0' so that GetOpenFileName does not 
-    // use the contents of szFile to initialize itself.
-    ofn.lpstrFile[0] = '\0'; // długi string - NIE DZIAŁA
+    ofn.lpstrFile[0] = '\0';
     ofn.nMaxFile = sizeof(szFile);
     ofn.lpstrFilter = "Premiere (.xml)\0*.xml\0";
     ofn.nFilterIndex = 1;
@@ -566,86 +607,46 @@ void opensave() // INT  PCHAR FileName, HWND hwnd, HINSTANCE hInstance
     ofn.nMaxFileTitle = 0;
     ofn.lpstrInitialDir = NULL;
     ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
-    // MessageBox(NULL, L"nie udało się otworzyć okna2", L"error", MB_ICONEXCLAMATION);
-    // Display the Open dialog box. 
 
     if (GetOpenFileNameA(&ofn) == TRUE)
     {
-        strcpy(s, ofn.lpstrFile); //ODCZYTUJE TYLKO PIERWSZA LITERE
-        
-        /*for (int i = 0; i < 250; i++)
-        {
-            prefix[i] = ofn.lpstrFile[i];
-        }*/
+        strcpy(s, ofn.lpstrFile);
         SetWindowTextA(tekst, s);        
         
-        //strcpy(ofn.lpstrFile, "C:\\\\Users\\matigawr\\source\\repos\\Translator\\Translator\\test.xml");
         h = CreateFileA(ofn.lpstrFile, GENERIC_READ, FILE_SHARE_READ, (LPSECURITY_ATTRIBUTES)NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, (HANDLE)NULL);
+
         int fd = _open_osfhandle((long)h, _O_RDONLY);
-        //sprintf(s, "fd: %d", fd);
-        //strcpy(ofn.lpstrFile, "C:\\\\Users\\matigawr\\source\\repos\\Translator\\Translator\\test.xml");
-        //strcpy(s, ofn.lpstrFile); //ODCZYTUJE TYLKO PIERWSZA LITERE
-        //SetWindowTextA(tekst, s);
+
         if (fd != -1)
         {
             FILE* fileXML = _fdopen(fd, "rb");
+
             fd = -1;
             sprintf(s, "otwarto plik %s", ofn.lpstrFile);
-            SetWindowTextA(tekst, s);
-            ZeroMemory(&ofn, sizeof(ofn));
-            ofn.lStructSize = sizeof(ofn);
-            ofn.hwndOwner = NULL;
-            ofn.lpstrFile = szFile;
-            // Set lpstrFile[0] to '\0' so that GetOpenFileName does not 
-            // use the contents of szFile to initialize itself.
-            ofn.lpstrFile[0] = '\0'; // długi string - NIE DZIAŁA
-            ofn.nMaxFile = sizeof(szFile);
-            ofn.lpstrFilter = "Reaper (.rpp)\0*.rpp\0";
-            ofn.nFilterIndex = 1;
-            ofn.lpstrFileTitle = NULL;
-            ofn.nMaxFileTitle = 0;
-            ofn.lpstrInitialDir = NULL;
-            ofn.Flags = OFN_OVERWRITEPROMPT;
-            GetSaveFileNameA(&ofn);
-            sh = CreateFileA(ofn.lpstrFile, GENERIC_WRITE, 0, (LPSECURITY_ATTRIBUTES)NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, (HANDLE)NULL);
-            int fd = _open_osfhandle((long)sh, _O_RDONLY);
-            if (fd != -1)
-            {
-                sprintf(s, "utworzono plik %s", ofn.lpstrFile);
-                SetWindowTextA(tekst, s);
-                FILE* fileRPP = _fdopen(fd, "w");
-                translator(fileXML, fileRPP);
-                CloseHandle(h);
-                CloseHandle(sh);
-            }      
-            else
-            {
-                MessageBox(NULL, L"nie udało się utworzyć pliku do zapisu", L"error", MB_ICONERROR);
-                clear();
-            }
+            SetWindowTextA(tekst, s);                        
+            translator(fileXML);
+            CloseHandle(h);
         }
         else
         {
             MessageBox(NULL, L"nie udało się otworzyć pliku", L"error", MB_ICONERROR);
             clear();
         }
-        //return 1;
     } 
     else
     {
         MessageBox(NULL, L"nie udało się otworzyć pliku", L"error", MB_ICONERROR);
         clear();
-        //return 0;
     }
 }
-//ZROBIC ODWOLANIE DO OPEN Z WNETRZA TRANSLATOR!!!!!!!!!!!!!!!!!!!!!
+
 void opensaveDROP(wchar_t* name)
 {
     FILE* fileXML;
     LPWSTR s[50];
     errno_t error;
 
-    if ((error = fopen_s(&fileXML, "test.xml", "r")) != 0)
+    if ((error = fopen_s(&fileXML, name, "r")) != 0)
     {
         MessageBox(NULL, L"nie udało się utworzyć pliku do zapisu", L"error", MB_ICONERROR);
         clear();
@@ -655,54 +656,20 @@ void opensaveDROP(wchar_t* name)
         sprintf(s, "otwarto plik %s", name);
         SetWindowTextA(tekst, s);
 
-        OPENFILENAME ofn, sofn;       // common dialog box structure
-        char szFile[250];       // buffer for file name
-        HANDLE sh;              // file handle
-        LPWSTR s[50];
-
-        ZeroMemory(&ofn, sizeof(ofn));
-        ofn.lStructSize = sizeof(ofn);
-        ofn.hwndOwner = NULL;
-        ofn.lpstrFile = szFile;
-        // Set lpstrFile[0] to '\0' so that GetOpenFileName does not 
-        // use the contents of szFile to initialize itself.
-        ofn.lpstrFile[0] = '\0'; // długi string - NIE DZIAŁA
-        ofn.nMaxFile = sizeof(szFile);
-        ofn.lpstrFilter = "Reaper (.rpp)\0*.rpp\0";
-        ofn.nFilterIndex = 1;
-        ofn.lpstrFileTitle = NULL;
-        ofn.nMaxFileTitle = 0;
-        ofn.lpstrInitialDir = NULL;
-        ofn.Flags = OFN_OVERWRITEPROMPT;
-        GetSaveFileNameA(&ofn);
-        sh = CreateFileA(ofn.lpstrFile, GENERIC_WRITE, 0, (LPSECURITY_ATTRIBUTES)NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, (HANDLE)NULL);
-        int fd = _open_osfhandle((long)sh, _O_RDONLY);
-        if (fd != -1)
-        {
-            sprintf(s, "utworzono plik %s", ofn.lpstrFile);
-            SetWindowTextA(tekst, s);
-            FILE* fileRPP = _fdopen(fd, "w");
-            translator(fileXML, fileRPP);
-            //CloseHandle(h);
-            CloseHandle(sh);
-        }
-        else
-        {
-            MessageBox(NULL, L"nie udało się utworzyć pliku do zapisu", L"error", MB_ICONERROR);
-            clear();
-        }
+        translator(fileXML);
     }
-
 }
 
 //okno główne
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
     WNDCLASSEX main;
+    HWND hwnd;
     HFONT hFont = CreateFont(20, 0, 0, 0, FW_DONTCARE, FALSE, FALSE, FALSE, DEFAULT_CHARSET, OUT_OUTLINE_PRECIS, CLIP_DEFAULT_PRECIS, PROOF_QUALITY, VARIABLE_PITCH, TEXT("Century Gothic"));
     HFONT hFont2 = CreateFont(21, 0, 0, 900, FW_DONTCARE, FALSE, FALSE, FALSE, DEFAULT_CHARSET, OUT_OUTLINE_PRECIS, CLIP_DEFAULT_PRECIS, PROOF_QUALITY, VARIABLE_PITCH, TEXT("Century Gothic"));
     HFONT hFont3 = CreateFont(18, 0, 0, 900, FW_DONTCARE, FALSE, FALSE, FALSE, DEFAULT_CHARSET, OUT_OUTLINE_PRECIS, CLIP_DEFAULT_PRECIS, PROOF_QUALITY, VARIABLE_PITCH, TEXT("Century Gothic"));
     HBRUSH background = CreateSolidBrush(RGB(245, 245, 245));
+
     main.cbSize = sizeof(WNDCLASSEX);
     main.style = CS_HREDRAW | CS_VREDRAW;
     main.lpfnWndProc = WndProc;
@@ -716,26 +683,24 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     main.lpszClassName = classname;
     main.hIconSm = LoadIcon(NULL, IDI_APPLICATION);
 
-    if (!RegisterClassEx(&main)) //DO NAPRAWY
+    if (!RegisterClassEx(&main))
     {
         MessageBox(NULL, L"nie udało się otworzyć okna", L"error", MB_ICONERROR | MB_OK);
         return 1;
-    }
-    HWND hwnd;
+    }    
 
     hwnd = CreateWindowEx(WS_EX_CLIENTEDGE, classname, L"translator",  WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME | WS_MINIMIZEBOX, CW_USEDEFAULT, CW_USEDEFAULT, 620, 300, NULL, NULL, hInstance, NULL);
+    
     SetWindowLong(hwnd, GWL_STYLE, GetWindowLong(hwnd, GWL_STYLE) & ~WS_SIZEBOX);
 
-    //bcgteskst = CreateWindow(L"STATIC", L"", WS_VISIBLE | WS_CHILD | SS_LEFT, 21, 41, 558, 191, hwnd, NULL, hInstance, NULL);
     tlo2 = CreateWindow(L"STATIC", L"", WS_VISIBLE | WS_CHILD | SS_LEFT, 90, 55, 420, 160, hwnd, NULL, hInstance, NULL);
+
     tlo = CreateWindow(L"STATIC", L"\nkliknij, by uruchomić\n\n\n\nlub przesuń plik na okno programu", WS_VISIBLE | WS_CHILD | SS_CENTER, 100, 65, 400, 140, hwnd, NULL, hInstance, NULL);
     SendMessage(tlo, WM_SETFONT, (WPARAM)hFont, MAKELPARAM(TRUE, 0));
-    std = CreateWindowEx(0, L"BUTTON", L"START", WS_CHILD | WS_VISIBLE | BS_FLAT, 250, 125, 100, 40, hwnd, NULL, hInstance, NULL); //BS_BITMAP
-    SendMessage(std, WM_SETFONT, (WPARAM)hFont2, MAKELPARAM(TRUE, 0));
-    //HBITMAP LoadBitmapA(hInstance,"bitmap.bmp");
-    //bm1 = CreateWindowEx(0, L"BUTTON", L"standardowy", WS_CHILD | WS_VISIBLE | BS_FLAT, 250, 115, 100, 40, hwnd, NULL, hInstance, NULL);
 
-    //SendMessage(button, BM_SETIMAGE, IMAGE_BITMAP, (LPARAM)LoadBitmapA(hInstance, MAKEINTRESOURCEA(IMG_BITMAP)));
+    std = CreateWindowEx(0, L"BUTTON", L"START", WS_CHILD | WS_VISIBLE | BS_FLAT, 250, 120, 100, 40, hwnd, NULL, hInstance, NULL);
+    SendMessage(std, WM_SETFONT, (WPARAM)hFont2, MAKELPARAM(TRUE, 0));
+
     options = CreateWindowEx(0, L"BUTTON", L"więcej opcji", WS_CHILD | WS_VISIBLE | BS_FLAT, 180, 0, 240, 23, hwnd, NULL, hInstance, NULL);    
     SendMessage(options, WM_SETFONT, (WPARAM)hFont, MAKELPARAM(TRUE, 0));
 
@@ -743,16 +708,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     SendMessage(help, WM_SETFONT, (WPARAM)hFont, MAKELPARAM(TRUE, 0));
     about = CreateWindowEx(0, L"BUTTON", L"o programie", WS_CHILD | WS_VISIBLE | BS_FLAT, 420, 0, 180, 23, hwnd, NULL, hInstance, NULL);
     SendMessage(about, WM_SETFONT, (WPARAM)hFont, MAKELPARAM(TRUE, 0));
-    //button2 = CreateWindowEx(0, L"BUTTON", L"Plik...", WS_CHILD | WS_VISIBLE | WS_BORDER, 0, 100, 50, 25, hwnd, NULL, hInstance, NULL);
-    //hwnd = CreateWindowEx(0, classname, "STATIC", WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, 240, 120, NULL, NULL, hInstance, NULL);
-
 
     bar1 = CreateWindow(L"STATIC", L"", WS_VISIBLE | WS_CHILD | SS_LEFT, 0, 40, 20, 205, hwnd, NULL, hInstance, NULL);
     bar2 = CreateWindow(L"STATIC", L"", WS_VISIBLE | WS_CHILD | SS_LEFT, 580, 40, 20, 205, hwnd, NULL, hInstance, NULL);
-
     bar4 = CreateWindow(L"STATIC", L"", WS_VISIBLE | WS_CHILD | SS_LEFT, 20, 40, 15, 205, hwnd, NULL, hInstance, NULL);
     bar5 = CreateWindow(L"STATIC", L"", WS_VISIBLE | WS_CHILD | SS_LEFT, 565, 40, 15, 205, hwnd, NULL, hInstance, NULL);
-
     bar3 = CreateWindow(L"STATIC", L"", WS_VISIBLE | WS_CHILD | SS_LEFT, 0, 233, 600, 30, hwnd, NULL, hInstance, NULL);
 
     tekst = CreateWindow(L"STATIC", L"", WS_VISIBLE | WS_CHILD | SS_CENTER, 0, 23, 600, 20, hwnd, NULL, hInstance, NULL);
@@ -760,7 +720,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
     tekst2 = CreateWindow(L"STATIC", L".xml -> .rpp", WS_VISIBLE | WS_CHILD | SS_CENTER, 0, 236, 600, 20, hwnd, NULL, hInstance, NULL);
     SendMessage(tekst2, WM_SETFONT, (WPARAM)hFont3, MAKELPARAM(FALSE, 0));
-    //SetWindowText(tekst, TEXT(""));
 
     if (hwnd == NULL)
     {
@@ -772,23 +731,21 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         MessageBox(NULL, L"nie udało się utworzyć przycisku", L"error", MB_ICONERROR);
         return 1;
     }
+
     HANDLE hIcon = (HICON)LoadImage(NULL, L"2.ico", IMAGE_ICON, 0, 0, LR_LOADFROMFILE | LR_DEFAULTSIZE | LR_SHARED);
-    if (hIcon) {
-        //Change both icons to the same icon handle.
+    if (hIcon) 
+    {
         SendMessage(hwnd, WM_SETICON, ICON_SMALL, hIcon);
         SendMessage(hwnd, WM_SETICON, ICON_BIG, hIcon);
 
-        //This will ensure that the application icon gets changed too.
         SendMessage(GetWindow(hwnd, GW_OWNER), WM_SETICON, ICON_SMALL, hIcon);
         SendMessage(GetWindow(hwnd, GW_OWNER), WM_SETICON, ICON_BIG, hIcon);
     }
 
     DragAcceptFiles(hwnd, TRUE);
-
+    CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
     ShowWindow(hwnd, nCmdShow);
-    //ShowWindow(button, nCmdShow);
     UpdateWindow(hwnd);
-    //UpdateWindow(button);
 
     while (GetMessage(&message, NULL, 0, 0))
     {
@@ -803,15 +760,12 @@ int i = 1, j = 1, k = 1;
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam, HINSTANCE hInstance, int nCmdShow)
 {
 
-    HBRUSH hBrush3 = CreateSolidBrush(RGB(199, 218, 230)); //NIEBEZPIECZNE !!!!!!!!
-    //HBRUSH hBrush2 = CreateSolidBrush(RGB(150, 190, 200)); //POTENTIAL ERROR !!!!!
+    HBRUSH hBrush3 = CreateSolidBrush(RGB(199, 218, 230));
     HBRUSH hBrush2 = CreateSolidBrush(RGB(228, 230, 228));
     HBRUSH hBrush = CreateSolidBrush(RGB(226, 249, 255)); //ramka
     HBRUSH hBrush4 = CreateSolidBrush(RGB(180, 200, 200));
     HFONT hFont2 = CreateFont(20, 0, 0, 0, FW_DONTCARE, FALSE, FALSE, FALSE, DEFAULT_CHARSET, OUT_OUTLINE_PRECIS, CLIP_DEFAULT_PRECIS, PROOF_QUALITY, VARIABLE_PITCH, TEXT("Century Gothic"));
     HFONT hFont = CreateFont(18, 0, 0, 0, FW_DONTCARE, FALSE, FALSE, FALSE, DEFAULT_CHARSET, OUT_OUTLINE_PRECIS, CLIP_DEFAULT_PRECIS, PROOF_QUALITY, VARIABLE_PITCH, TEXT("Century Gothic"));
-    //OGARNĄĆ ZAMYKANIE CZCIONEK!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
 
     if (!run)
     {
@@ -833,16 +787,16 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam, HINS
         case WM_DROPFILES:
         {
             HDROP drop = (HDROP)wParam;
-            UINT filePathesCount = DragQueryFileA(drop, 0xFFFFFFFF, NULL, 512);//If "0xFFFFFFFF" as the second parameter: return the count of files dropped
+            UINT filePathesCount = DragQueryFileA(drop, 0xFFFFFFFF, NULL, 512);
             wchar_t* fileName = NULL;
             UINT longestFileNameLength = 0;
-
             char s[250];
             int d;
+
             for (UINT i = 0; i < filePathesCount; ++i)
             {
-                //If NULL as the third parameter: return the length of the path, not counting the trailing '0'
                 UINT fileNameLength = DragQueryFileA(drop, i, NULL, 512) + 1;
+
                 if (fileNameLength > longestFileNameLength)
                 {
                     longestFileNameLength = fileNameLength;
@@ -850,18 +804,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam, HINS
                 }
                 DragQueryFileA(drop, i, fileName, fileNameLength);
             }
-            //if(fileName)
-            //char tmp;
-            /*for (int z = 0; z < longestFileNameLength; z++)
-            {
-                tmp = fileName[z];
-                if (tmp == '\0')
-                {
-                    break;
-                }
-            }*/
-            //strcpy(s, fileName);
-            strcpy(s,fileName); //MAGIA
+
+            strcpy(s,fileName);
             SetWindowTextA(tekst, s);
             if (strstr(s, ".xml") != 0)
             {
@@ -870,24 +814,17 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam, HINS
             else
             {
                 clear();
-                MessageBox(NULL, L"złe rozszerzenie pliku", L"error", MB_ICONERROR);
-                
-                //SetWindowTextA(tekst, "");
+                MessageBox(NULL, L"złe rozszerzenie pliku", L"error", MB_ICONERROR);               
             }
-
-            //d = strlen(fileName);
-            //sprintf(s, "otwarto plik %d", d);
-            
-
 
             free(fileName);
             DragFinish(drop);
             break;
         }
-        case WM_COMMAND:
+        case WM_COMMAND: //reakcje programu na działania użytkownika
             if ((HWND)lParam == helpT)
             {
-                ShellExecute(0, 0, L"https://github.com/MateuszGawrysiak", 0, 0, SW_SHOW);
+                ShellExecute(0, 0, L"https://github.com/MateuszGawrysiak/translator", 0, 0, SW_SHOW);
                 DestroyWindow(helpT);                
                 SetWindowTextA(help, "pomoc");
                 j *= -1;
@@ -921,13 +858,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam, HINS
             }
             if ((HWND)lParam == help)
             {
-                /*MessageBoxA(NULL, "Program konwertuje pliki .xml w standardzie Adobe Premiere Pro na pliki .rpp programu Reaper 6\n"
-                    "\n1. Opcja \"standard\" - wybór pliku oraz normalny przebieg translacji\n"
-                    "\n2. Opcja \"debug\" - wybór pliku oraz powiadomienia o każdym błędzie konwersji\n"
-                    "\n3. Opcja \"no path\" - zapis pustej ścieżki dostępu w celu odciążenia wynikowego projektu. Opcja zalecana, gdy do projektu programu Reaper "
-                    "importujemy gotowy film - umożliwia podgląd na \"timeline\" i nie wymaga ładowania mnóstwa niepotrzebnych danych\n"
-                    "\nZnane błędy: brak konwersji lokalizacji ponownych wystąpień plików projektu, jeśli nie występują one po sobie\n"
-                    , "pomoc", MB_ICONINFORMATION);*/
                 if (k == -1)
                 {
                     DestroyWindow(aboutT);
@@ -939,8 +869,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam, HINS
                     //SetWindowTextA(options, "więcej opcji");
                 }
                 if (j == 1)
-                {
-                    
+                {                    
                     helpT = CreateWindow(L"STATIC", L"Program konwertuje pliki .xml w standardzie Adobe Premiere Pro / Final Cut Pro na pliki .rpp programu Reaper."
                         "\n1. Opcja \"standard\" - wybór pliku oraz normalny przebieg translacji."
                         "\n2. Opcja \"debug\" - wybór pliku oraz powiadomienia o każdym błędzie konwersji."
@@ -949,7 +878,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam, HINS
                         "\nZnane błędy: brak konwersji lokalizacji ponownych wystąpień plików projektu, jeśli nie występują one po sobie."
                         "\n                                     >> kliknij, by przejść do strony projektu <<", WS_VISIBLE | WS_CHILD | SS_LEFT | SS_NOTIFY, 20, 40, 560, 193, hwnd, NULL, hInstance, NULL);
                     SendMessage(helpT, WM_SETFONT, (WPARAM)hFont, MAKELPARAM(FALSE, 0));
-                    //BringWindowToTop(helpT);
                     SetWindowTextA(help, "zamknij");
                 }
                 else
@@ -962,10 +890,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam, HINS
             }
             if ((HWND)lParam == about)
             {                
-                /*MessageBoxA(NULL, "Translator            wersja 0.92"
-                    "\ndata:                    22.04.2021"
-                    "\nautor:    Mateusz Gawrysiak"
-                    "\n\nużywaj na własne ryzyko", "o programie", MB_ICONINFORMATION);*/
                 if (j == -1)
                 {
                     DestroyWindow(helpT);
@@ -978,9 +902,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam, HINS
                 }
                 if (k == 1)
                 {
-                    //HFONT hFont = CreateFont(18, 0, 0, 0, FW_DONTCARE, FALSE, FALSE, FALSE, DEFAULT_CHARSET, OUT_OUTLINE_PRECIS, CLIP_DEFAULT_PRECIS, PROOF_QUALITY, VARIABLE_PITCH, TEXT("Century Gothic"));
                     SetWindowTextA(about, "zamknij");
-                    aboutT = CreateWindow(L"STATIC", L"<< translator wersja 0.97 - 03.05.2021 >>" //BRING TO FRONT
+                    aboutT = CreateWindow(L"STATIC", L"<< translator wersja 1.0 - 19.05.2021 >>" //BRING TO FRONT
                     "\nkonwersja plików projektów .xml na .rpp"
                     "\nopracowany dla wersji Reaper 6.19 i kolejnych\n"
                     "\nMateusz Gawrysiak"
@@ -1022,24 +945,18 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam, HINS
                 }
                 if (i == 1)
                 {      
-                    //UpdateWindow(tlo);
-                    //UpdateWindow(tlo2);
                     SetWindowTextA(tlo, "\nkliknij, by uruchomić w wybranym trybie");
                     SetWindowTextA(options, "mniej opcji");
-                    //SetTextAlign(tlo, TA_CENTER);
                     SetWindowTextA(std, "standard");
-                    dbg = CreateWindowEx(0, L"BUTTON", L"debug", WS_CHILD | WS_VISIBLE | BS_FLAT, 130, 125, 100, 40, hwnd, NULL, hInstance, NULL);
+
+                    dbg = CreateWindowEx(0, L"BUTTON", L"debug", WS_CHILD | WS_VISIBLE | BS_FLAT, 130, 120, 100, 40, hwnd, NULL, hInstance, NULL);
                     SendMessage(dbg, WM_SETFONT, (WPARAM)hFont2, MAKELPARAM(TRUE, 0));
-                    pth = CreateWindowEx(0, L"BUTTON", L"no path", WS_CHILD | WS_VISIBLE | BS_FLAT, 370, 125, 100, 40, hwnd, NULL, hInstance, NULL);
+
+                    pth = CreateWindowEx(0, L"BUTTON", L"no path", WS_CHILD | WS_VISIBLE | BS_FLAT, 370, 120, 100, 40, hwnd, NULL, hInstance, NULL);
                     SendMessage(pth, WM_SETFONT, (WPARAM)hFont2, MAKELPARAM(TRUE, 0));
-                    //SetWindowTextA(tlo2, "pomoc w wyborze");
-                    //DeleteObject(hFont2);
-                    //UpdateWindow(pth);
-                    //DeleteObject(hFont2);
                 }
                 else if (flaga == 0)
-                {
-                    //SetWindowTextA(tlo2, "");                    
+                {                  
                     SetWindowTextA(tlo, "\nkliknij, by uruchomić\n\n\n\nlub przesuń plik na okno programu");
                     SetWindowTextA(options, "więcej opcji");
                     SetWindowTextA(std, "START");
@@ -1052,37 +969,19 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam, HINS
                     i *= -1;
                 }
                 
-                //MessageBoxA(NULL, "Praca nad kolejnymi funkcjonalnościami w trakcie", "opcje", MB_ICONINFORMATION);
                 i *= -1;
                 break;
             }
-        case WM_CTLCOLORSTATIC:
+        case WM_CTLCOLORSTATIC: //zmiana kolorów interfejsu
         {
-            /*if (tekst == (HWND)lParam)
-            {
-                HDC hdcStatic = (HDC)wParam;
-                SetTextColor(hdcStatic, RGB(0, 0, 0));
-                SetBkColor(hdcStatic, RGB(180, 200, 200));
-                return (INT_PTR)hBrush4;
-                break;
-            }
-            if (tekst2 == (HWND)lParam)
-            {
-                HDC hdcStatic = (HDC)wParam;
-                SetTextColor(hdcStatic, RGB(0, 0, 0));
-                SetBkColor(hdcStatic, RGB(180, 200, 200));
-                return (INT_PTR)hBrush4;
-                break;
-            }*/
             if (tlo == (HWND)lParam)
             {
                 HDC hdcStatic = (HDC)wParam;
-
-                    SetTextColor(hdcStatic, RGB(0, 0, 0));
-                    SetBkColor(hdcStatic, RGB(199, 218, 230));
-                    UpdateWindow(tlo);
-                    return (INT_PTR)hBrush3;
-
+                SetTextColor(hdcStatic, RGB(0, 0, 0));
+                SetBkColor(hdcStatic, RGB(199, 218, 230));
+                UpdateWindow(tlo);
+                
+                return (INT_PTR)hBrush3;
                 break;
             }
             if (tlo2 == (HWND)lParam)
@@ -1090,39 +989,16 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam, HINS
                 HDC hdcStatic = (HDC)wParam;
                 SetTextColor(hdcStatic, RGB(0, 0, 0));
                 SetBkColor(hdcStatic, RGB(199, 218, 230));
-                //UpdateWindow(tlo2);
+
                 return (INT_PTR)hBrush;
                 break;
             }
-            /*if (bar1 == (HWND)lParam)
-            {
-                HDC hdcStatic = (HDC)wParam;
-                SetTextColor(hdcStatic, RGB(0, 0, 0));
-                SetBkColor(hdcStatic, RGB(230, 230, 230));
-                return (INT_PTR)hBrush;
-                break;
-            }
-            if (bar2 == (HWND)lParam)
-            {
-                HDC hdcStatic = (HDC)wParam;
-                SetTextColor(hdcStatic, RGB(0, 0, 0));
-                SetBkColor(hdcStatic, RGB(230, 230, 230));
-                return (INT_PTR)hBrush;
-                break;
-            }*/
-            /*if (bar3 == (HWND)lParam)
-            {
-                HDC hdcStatic = (HDC)wParam;
-                SetTextColor(hdcStatic, RGB(0, 0, 0));
-                SetBkColor(hdcStatic, RGB(180, 200, 200));
-                return (INT_PTR)hBrush4;
-                break;
-            }*/
             if (bar4 == (HWND)lParam)
             {
                 HDC hdcStatic = (HDC)wParam;
                 SetTextColor(hdcStatic, RGB(0, 0, 0));
                 SetBkColor(hdcStatic, RGB(230, 230, 230));
+
                 return (INT_PTR)hBrush2;
                 break;
             }
@@ -1131,6 +1007,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam, HINS
                 HDC hdcStatic = (HDC)wParam;
                 SetTextColor(hdcStatic, RGB(0, 0, 0));
                 SetBkColor(hdcStatic, RGB(230, 230, 230));
+
                 return (INT_PTR)hBrush2;
                 break;
             }
@@ -1150,8 +1027,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam, HINS
             DeleteObject(hBrush4);
             DeleteObject(hFont);
             DeleteObject(hFont2);
-            return DefWindowProc(hwnd, msg, wParam, lParam);
 
+            return DefWindowProc(hwnd, msg, wParam, lParam);
         }        
     }
     else
